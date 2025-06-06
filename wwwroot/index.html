@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MUD Terminal</title>
+    <style>
+      body {
+        background: #222;
+        color: #0f0;
+        font-family: monospace;
+        margin: 0;
+      }
+      #terminal {
+        width: 100vw;
+        height: 100vh;
+        padding: 10px;
+        box-sizing: border-box;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="terminal" tabindex="0"></div>
+    <script>
+      const term = document.getElementById("terminal");
+      let ws;
+      let inputBuffer = "";
+      let history = ["Welcome to the MUD Terminal!"];
+
+      function renderTerminal() {
+        // Show history, then prompt with current buffer
+        term.innerHTML = history.join("<br>") + `<br>&gt; ${inputBuffer}`;
+        term.scrollTop = term.scrollHeight;
+      }
+
+      function connect() {
+        ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host);
+        ws.onopen = () => {
+          history.push("Connected to server");
+          renderTerminal();
+        };
+        ws.onmessage = (e) => {
+          history.push(e.data.replace(/\n/g, "<br>"));
+          renderTerminal();
+        };
+        ws.onclose = () => {
+          history.push("Disconnected");
+          renderTerminal();
+        };
+      }
+      connect();
+
+      term.addEventListener("keydown", function (e) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          if (e.key === "Enter") {
+            ws.send(inputBuffer);
+            history.push(`&gt; ${inputBuffer}`);
+            inputBuffer = "";
+          } else if (e.key === "Backspace") {
+            inputBuffer = inputBuffer.slice(0, -1);
+          } else if (e.key.length === 1) {
+            inputBuffer += e.key;
+          }
+          renderTerminal();
+          e.preventDefault();
+        }
+      });
+
+      renderTerminal();
+      term.focus();
+    </script>
+  </body>
+</html>
