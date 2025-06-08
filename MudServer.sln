@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudServer", "MudServer.csproj", "{329C7505-AA5D-2C7C-61E6-1EBFA88DD249}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudServer", "Server/MudServer.csproj", "{329C7505-AA5D-2C7C-61E6-1EBFA88DD249}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
