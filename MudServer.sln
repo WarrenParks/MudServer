@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.196
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E53A8E3B-3B3D-4B8D-8B3D-4B8D8B3D8B3D}") = "MudServer.Server", "MudServer.Server.csproj", "{A1B2C3D4-E5F6-7A8B-9A0B-C1D2E3F4G5H6}"
+Project("{E53A8E3B-3B3D-4B8D-8B3D-4B8D8B3D8B3D}") = "MudServer.Server", "MudServer.Server\MudServer.Server.csproj", "{A1B2C3D4-E5F6-7A8B-9A0B-C1D2E3F4G5H6}"
 EndProject
 Project("{E53A8E3B-3B3D-4B8D-8B3D-4B8D8B3D8B3D}") = "MudServer.Tests", "MudServer.Tests\MudServer.Tests.csproj", "{H6G5F4E3-D2C1-B0A9-8B7-6A5F4E3D2C1B}"
 EndProject
