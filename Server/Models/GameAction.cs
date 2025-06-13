@@ -1,3 +1,5 @@
+namespace MudServer.Models;
+
 public enum Actions
 {
   Move,

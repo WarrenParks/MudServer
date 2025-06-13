@@ -1,9 +1,14 @@
 using MudServer;
+using MudServer.Models;
+using MudServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<Client>();
+builder.Services.AddSingleton<GameLoop>();
+builder.Services.AddSingleton<IConnectionManager, ConnectionManager>();
+builder.Services.AddHostedService<GameLoopService>();
 
 var app = builder.Build();
 

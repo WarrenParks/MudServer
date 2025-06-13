@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using MudServer.Services;
 
 namespace MudServer;
 
@@ -25,17 +26,18 @@ public class Client(
     this.connectionManager.AddConnection(clientId, webSocket);
     var buffer = new byte[1024 * 4];
 
-    while (webSocket.State == System.Net.WebSockets.WebSocketState.Open)
+    while (webSocket.State == WebSocketState.Open)
     {
       var messageBuffer = new List<byte>();
-      System.Net.WebSockets.WebSocketReceiveResult result;
+      WebSocketReceiveResult result;
+
       do
       {
         result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
         messageBuffer.AddRange(buffer.Take(result.Count));
       } while (!result.EndOfMessage);
 
-      if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+      if (result.MessageType == WebSocketMessageType.Close)
         break;
 
       string message = Encoding.UTF8.GetString(messageBuffer.ToArray());
