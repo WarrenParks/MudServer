@@ -1,13 +1,24 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using MudServer;
 using MudServer.Models;
+using MudServer.Server.Services;
 using MudServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var jsonSerializerOptions = new JsonSerializerOptions
+{
+  PropertyNameCaseInsensitive = true
+};
+jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<Client>();
 builder.Services.AddSingleton<GameLoop>();
 builder.Services.AddSingleton<IConnectionManager, ConnectionManager>();
+builder.Services.AddSingleton<IActionManager, ActionManager>();
+builder.Services.AddSingleton(jsonSerializerOptions);
 builder.Services.AddHostedService<GameLoopService>();
 
 var app = builder.Build();

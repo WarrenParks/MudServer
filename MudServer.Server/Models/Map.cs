@@ -40,7 +40,7 @@ public class GameMap
     }
   }
 
-  public MapTile GetTile(int x, int y)
+  public MapTile? GetTile(int x, int y)
   {
     if (x < 0 || x >= Width || y < 0 || y >= Height)
       return null;
@@ -55,25 +55,3 @@ public class GameMap
   }
 }
 
-// Example usage
-public static class MapExample
-{
-  public static void Run()
-  {
-    var map = new GameMap(10, 10);
-
-    // Set a wall at (2,3)
-    map.SetTile(2, 3, new MapTile(2, 3, false, "Wall"));
-
-    // Print map info
-    for (int y = 0; y < map.Height; y++)
-    {
-      for (int x = 0; x < map.Width; x++)
-      {
-        var tile = map.GetTile(x, y);
-        Console.Write(tile.IsWalkable ? "." : "#");
-      }
-      Console.WriteLine();
-    }
-  }
-}

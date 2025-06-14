@@ -10,27 +10,152 @@
         font-family: monospace;
         margin: 0;
       }
-      #terminal {
-        width: 100vw;
+      #container {
+        display: flex;
         height: 100vh;
+        width: 100vw;
+      }
+      #sidebar {
+        width: 200px;
+        background: #111;
+        border-right: 1px solid #333;
+        padding: 10px;
+        box-sizing: border-box;
+        overflow-y: auto;
+      }
+      #sidebar h3 {
+        margin-top: 0;
+        color: #0f0;
+        font-size: 1.1em;
+      }
+      #template-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      #template-list li {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin-bottom: 2px;
+      }
+      #template-list li.selected {
+        background: #0f0;
+        color: #222;
+      }
+      #main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      #terminal {
+        flex: 1;
         padding: 10px;
         box-sizing: border-box;
         outline: none;
+        overflow-y: auto;
+      }
+      #json-editor-container {
+        background: #181818;
+        border-top: 1px solid #333;
+        padding: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      #json-editor {
+        width: 100%;
+        min-height: 100px;
+        font-family: monospace;
+        font-size: 1em;
+        background: #222;
+        color: #0f0;
+        border: 1px solid #333;
+        border-radius: 4px;
+        padding: 8px;
+        box-sizing: border-box;
+        resize: vertical;
+      }
+      #send-json-btn {
+        background: #0f0;
+        color: #222;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-left: 8px;
+      }
+      #send-json-btn:hover {
+        background: #7fff7f;
       }
     </style>
   </head>
   <body>
-    <div id="terminal" tabindex="0"></div>
+    <div id="container">
+      <div id="sidebar">
+        <h3>JSON Templates</h3>
+        <ul id="template-list"></ul>
+      </div>
+      <div id="main">
+        <div id="terminal" tabindex="0"></div>
+        <div id="json-editor-container">
+          <textarea id="json-editor" spellcheck="false"></textarea>
+          <button id="send-json-btn">Send JSON</button>
+        </div>
+      </div>
+    </div>
     <script>
+      // JSON templates (could be loaded from a file in the future)
+      const jsonTemplates = {
+        Move: {
+          action: "move",
+          priority: 1,
+          targetX: 1,
+          targetY: 2,
+        },
+        Attack: {
+          action: "attack",
+          priority: 1,
+          target: "enemy-id",
+        },
+        "Start Game": {
+          action: "startGame",
+        },
+        Ping: {
+          action: "ping",
+        },
+      };
+
       const term = document.getElementById("terminal");
+      const templateList = document.getElementById("template-list");
+      const jsonEditor = document.getElementById("json-editor");
+      const sendJsonBtn = document.getElementById("send-json-btn");
       let ws;
       let inputBuffer = "";
       let history = ["Welcome to the MUD Terminal!"];
+      let selectedTemplate = Object.keys(jsonTemplates)[0];
 
       function renderTerminal() {
         // Show history, then prompt with current buffer
         term.innerHTML = history.join("<br>") + `<br>&gt; ${inputBuffer}`;
         term.scrollTop = term.scrollHeight;
+      }
+
+      function renderTemplateList() {
+        templateList.innerHTML = "";
+        Object.keys(jsonTemplates).forEach((name) => {
+          const li = document.createElement("li");
+          li.textContent = name;
+          if (name === selectedTemplate) li.classList.add("selected");
+          li.onclick = () => {
+            selectedTemplate = name;
+            jsonEditor.value = JSON.stringify(jsonTemplates[name], null, 2);
+            renderTemplateList();
+          };
+          templateList.appendChild(li);
+        });
       }
 
       function connect() {
@@ -65,6 +190,25 @@
           e.preventDefault();
         }
       });
+
+      // JSON editor logic
+      renderTemplateList();
+      jsonEditor.value = JSON.stringify(jsonTemplates[selectedTemplate], null, 2);
+
+      sendJsonBtn.onclick = function () {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          let json;
+          try {
+            json = JSON.parse(jsonEditor.value);
+          } catch (e) {
+            alert("Invalid JSON");
+            return;
+          }
+          ws.send(JSON.stringify(json));
+          history.push(`&gt; [JSON] ${JSON.stringify(json)}`);
+          renderTerminal();
+        }
+      };
 
       renderTerminal();
       term.focus();

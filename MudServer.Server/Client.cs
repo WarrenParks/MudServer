@@ -1,6 +1,8 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using MudServer.Models;
+using MudServer.Server.Services;
 using MudServer.Services;
 
 namespace MudServer;
@@ -8,11 +10,15 @@ namespace MudServer;
 public class Client(
   ILogger<Client> logger,
   IHttpContextAccessor httpContextAccessor,
-  IConnectionManager connectionManager) : IHostedService
+  IConnectionManager connectionManager,
+  IActionManager actionManager,
+  JsonSerializerOptions jsonSerializerOptions) : IHostedService
 {
   private readonly ILogger<Client> logger = logger;
   private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
   private readonly IConnectionManager connectionManager = connectionManager;
+  private readonly IActionManager actionManager = actionManager;
+  private readonly JsonSerializerOptions jsonSerializerOptions = jsonSerializerOptions;
   private readonly Guid clientId = Guid.NewGuid();
 
   public async Task StartAsync(CancellationToken cancellationToken)
@@ -47,12 +53,14 @@ public class Client(
         var json = JsonDocument.Parse(message);
         this.logger.LogInformation("Client {ClientId} Received JSON: {Json}", clientId, json.RootElement);
 
+        var gameAction = json.Deserialize<GameAction>(this.jsonSerializerOptions);
+
         // Handle your JSON message here
-        if (json.RootElement.TryGetProperty("action", out var action))
+        if (gameAction != null)
         {
-          switch (action.GetString())
+          switch (gameAction.Action)
           {
-            case "ping":
+            case Actions.Ping:
               // Respond to ping
               var response = new { action = "pong", this.clientId };
               var responseJson = JsonSerializer.Serialize(response);
@@ -60,7 +68,7 @@ public class Client(
               await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, cancellationToken);
               break;
 
-            case "broadcast":
+            case Actions.Broadcast:
               // Handle broadcast action
               if (json.RootElement.TryGetProperty("message", out var messageContent))
               {
@@ -79,19 +87,34 @@ public class Client(
               }
               break;
 
+            case Actions.Defend:
+            case Actions.Heal:
+            case Actions.UseItem:
+            case Actions.Move:
+            case Actions.Attack:
+              this.actionManager.AddAction(gameAction);
+              this.logger.LogInformation("Client {ClientId} added action {gameAction} on ({X}, {Y})", clientId, gameAction.Action, gameAction.TargetX, gameAction.TargetY);
+              break;
 
-            // Add more actions as needed
+            case Actions.StartGame:
+              this.actionManager.AddAction(new GameAction()
+              {
+                Action = Actions.StartGame,
+                Priority = 1
+              });
+              this.logger.LogInformation("Client {ClientId} started the game.", clientId);
+              break;
 
             default:
-              this.logger.LogWarning("Client {ClientId} Unknown action: {Action}", clientId, action);
+              this.logger.LogWarning("Client {ClientId} Unknown", clientId);
               break;
           }
         }
       }
-      catch (JsonException)
+      catch (JsonException je)
       {
         // Handle invalid JSON
-        this.logger.LogWarning("Client {ClientId} Can't parse this: {Message}", clientId, message);
+        this.logger.LogWarning("Client {ClientId} Can't parse this: {Message}, exception message: {ExMes}", clientId, message, je.Message);
       }
     }
 

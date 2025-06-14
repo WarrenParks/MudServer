@@ -1,7 +1,12 @@
+using MudServer.Server.Models;
+using MudServer.Server.Services;
+
 namespace MudServer.Models;
 
-public class GameLoop
+public class GameLoop(IActionManager actionManager)
 {
+  private readonly IActionManager actionManager = actionManager;
+
   public enum Phase
   {
     TurnStart,
@@ -17,32 +22,46 @@ public class GameLoop
 
   public async Task StartAsync(CancellationToken cancellationToken)
   {
+    // wait for the game start action to be triggered
+    await this.actionManager.WaitForActionAsync(Actions.StartGame, cancellationToken);
+    // in future get this from the action manager as part of the game start action
+    var gameOptions = new GameOptions
+    {
+      GameName = "Test Game",
+      GameDescription = "This is a test game.",
+      MapWidth = 10,
+      MapHeight = 10,
+      MaxPlayers = 4,
+    };
+    var gameState = new GameState(gameOptions);
+
     while (!cancellationToken.IsCancellationRequested)
     {
       // Turn Start Phase
+      var turn = new Turn();
       CurrentPhase = Phase.TurnStart;
       OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
       // TODO: Broadcast game state to all players
-      await Task.Delay(1000, cancellationToken); // Placeholder for actual logic
+
 
       // Action Submission Phase
       CurrentPhase = Phase.ActionSubmission;
       OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
-      // TODO: Collect player actions
-      await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken); // 1 minute window
+      turn.Actions = await this.actionManager.CollectActionsAsync(cancellationToken);
 
       // Action Resolution Phase
       CurrentPhase = Phase.ActionResolution;
       OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
       // TODO: Process and resolve actions
-      await Task.Delay(1000, cancellationToken); // Placeholder
+      //this.actionManager.ProcessActions(turn.Actions);
+
+
 
       // Turn End Phase
       CurrentPhase = Phase.TurnEnd;
       OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
       // TODO: Broadcast results and handle end-of-turn effects
-      await Task.Delay(1000, cancellationToken); // Placeholder
-
+      gameState.Turns.Add(turn);
       TurnNumber++;
     }
   }
