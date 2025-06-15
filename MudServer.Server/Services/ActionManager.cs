@@ -8,7 +8,7 @@ public interface IActionManager
 
   public Task<List<GameAction>> CollectActionsAsync(CancellationToken cancellationToken);
 
-  public Task WaitForActionAsync(Actions action, CancellationToken cancellationToken);
+  public Task<GameAction> WaitForActionAsync(Actions action, CancellationToken cancellationToken);
 }
 
 public class ActionManager(ILogger<ActionManager> logger) : IActionManager
@@ -60,28 +60,24 @@ public class ActionManager(ILogger<ActionManager> logger) : IActionManager
     }, cancellationToken);
   }
 
-  public Task WaitForActionAsync(Actions action, CancellationToken cancellationToken)
+  public async Task<GameAction> WaitForActionAsync(Actions action, CancellationToken cancellationToken)
   {
-    return Task.Run(async () =>
+    while (!cancellationToken.IsCancellationRequested)
     {
-      //var actions = new List<GameAction>();
-      //var startTime = DateTime.UtcNow;
-      var actionFound = false;
-
-      while (!actionFound && !cancellationToken.IsCancellationRequested)
+      if (this.actions.TryDequeue(out var gameAction))
       {
-        if (this.actions.TryDequeue(out var gameAction))
+        if (gameAction != null && gameAction.Action == action)
         {
-          if (gameAction != null && gameAction.Action == action)
-          {
-            this.logger.LogInformation("Action found: {Action}", gameAction);
-            actionFound = true;
-          }
+          this.logger.LogInformation("Action found: {Action}", gameAction);
+          return gameAction;
         }
-
-        // wait for a short period before checking again
-        await Task.Delay(100, cancellationToken);
       }
-    }, cancellationToken);
+
+      // wait for a short period before checking again
+      await Task.Delay(100, cancellationToken);
+    }
+
+    // If cancelled, throw an OperationCanceledException
+    throw new OperationCanceledException(cancellationToken);
   }
 }

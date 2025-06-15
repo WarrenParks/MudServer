@@ -18,6 +18,7 @@ builder.Services.AddTransient<Client>();
 builder.Services.AddSingleton<GameLoop>();
 builder.Services.AddSingleton<IConnectionManager, ConnectionManager>();
 builder.Services.AddSingleton<IActionManager, ActionManager>();
+builder.Services.AddSingleton<IGameStateManager, GameStateManager>();
 builder.Services.AddSingleton(jsonSerializerOptions);
 builder.Services.AddHostedService<GameLoopService>();
 

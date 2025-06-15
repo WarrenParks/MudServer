@@ -15,7 +15,8 @@ namespace MudServer.Tests
         {
             // Arrange
             var actionManager = new Mock<IActionManager>();
-            this.GameLoop = new GameLoop(actionManager.Object);
+            var gameStateManager = new Mock<IGameStateManager>();
+            this.GameLoop = new GameLoop(actionManager.Object, gameStateManager.Object);
         }
 
 
