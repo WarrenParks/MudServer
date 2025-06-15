@@ -1,3 +1,5 @@
+namespace MudServer.Server.Models;
+
 public class GameOptions
 {
   public int MaxPlayers { get; set; } = 100; // Default maximum players

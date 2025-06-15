@@ -1,18 +1,4 @@
-namespace MudServer.Models;
-
-public enum Actions
-{
-  // Player Actions
-  Move,
-  Attack,
-  Defend,
-  Heal,
-  UseItem,
-  // Admin Actions
-  Ping,
-  StartGame,
-  Broadcast,
-}
+namespace MudServer.Server.Models;
 
 public class GameAction
 {

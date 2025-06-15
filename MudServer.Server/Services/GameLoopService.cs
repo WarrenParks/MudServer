@@ -1,4 +1,4 @@
-using MudServer.Models;
+using MudServer.Server.Models;
 
 public class GameLoopService(
   ILogger<GameLoopService> logger,

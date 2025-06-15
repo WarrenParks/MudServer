@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using MudServer.Models;
+using MudServer.Server.Models;
 using Moq;
 using MudServer.Server.Services;
 

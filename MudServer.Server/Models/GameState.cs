@@ -1,5 +1,3 @@
-using MudServer.Models;
-
 namespace MudServer.Server.Models;
 
 public class GameState(GameOptions gameOptions)

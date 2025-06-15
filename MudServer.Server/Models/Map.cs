@@ -1,4 +1,4 @@
-namespace MudServer.Models;
+namespace MudServer.Server.Models;
 
 // Represents a single tile or cell on the map
 public class MapTile

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MudServer;
-using MudServer.Models;
+using MudServer.Server.Models;
 using MudServer.Server.Services;
 using MudServer.Services;
 
@@ -38,7 +38,7 @@ app.Use(async (context, next) =>
   }
 });
 
-
+app.UseStaticFiles();
 app.MapGet("/", async context =>
 {
   context.Response.ContentType = "text/html";

@@ -1,7 +1,7 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using MudServer.Models;
+using MudServer.Server.Models;
 using MudServer.Server.Services;
 using MudServer.Services;
 

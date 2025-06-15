@@ -1,7 +1,6 @@
-using MudServer.Server.Models;
 using MudServer.Server.Services;
 
-namespace MudServer.Models;
+namespace MudServer.Server.Models;
 
 public class GameLoop(IActionManager actionManager)
 {
@@ -37,21 +36,15 @@ public class GameLoop(IActionManager actionManager)
 
     while (!cancellationToken.IsCancellationRequested)
     {
-      // Turn Start Phase
-      var turn = new Turn();
-      CurrentPhase = Phase.TurnStart;
-      OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
-      // TODO: Broadcast game state to all players
+      // Start a new turnGameAction
+      var turn = StartTurn();
 
-
-      // Action Submission Phase
-      CurrentPhase = Phase.ActionSubmission;
-      OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
-      turn.Actions = await this.actionManager.CollectActionsAsync(cancellationToken);
+      turn.Actions = await this.GetActionsForTurnAsync(cancellationToken);
+      turn.Outcomes = this.ProcessActions(turn.Actions, gameState);
 
       // Action Resolution Phase
       CurrentPhase = Phase.ActionResolution;
-      OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
+      this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
       // TODO: Process and resolve actions
       //this.actionManager.ProcessActions(turn.Actions);
 
@@ -59,10 +52,49 @@ public class GameLoop(IActionManager actionManager)
 
       // Turn End Phase
       CurrentPhase = Phase.TurnEnd;
-      OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
+      this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
       // TODO: Broadcast results and handle end-of-turn effects
       gameState.Turns.Add(turn);
       TurnNumber++;
     }
+  }
+
+  private IEnumerable<Outcome> ProcessActions(IEnumerable<GameAction> actions, GameState gameState)
+  {
+    // Process each action and return the outcomes
+    var outcomes = new List<Outcome>();
+    foreach (var action in actions)
+    {
+      // Here you would implement the logic to process each action
+      // For now, we just create a dummy outcome for each action
+      var outcome = new Outcome
+      {
+        Action = action,
+        Success = true, // Assume success for now
+        Message = $"Action {action.Action} processed successfully."
+      };
+      outcomes.Add(outcome);
+    }
+
+    return outcomes;
+  }
+
+  private Turn StartTurn()
+  {
+    // Turn Start Phase
+    var turn = new Turn(this.TurnNumber);
+    CurrentPhase = Phase.TurnStart;
+    this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
+
+    // TODO: Broadcast game state to all players
+    return turn;
+  }
+
+  private async Task<IEnumerable<GameAction>> GetActionsForTurnAsync(CancellationToken cancellationToken)
+  {
+    // Action Submission Phase
+    CurrentPhase = Phase.ActionSubmission;
+    this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
+    return await this.actionManager.CollectActionsAsync(cancellationToken);
   }
 }
