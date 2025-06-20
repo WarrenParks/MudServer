@@ -1,17 +1,20 @@
 public class ChatMessage
 {
-  public string Sender { get; set; } = string.Empty;
-  public string Content { get; set; } = string.Empty;
-  public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+  public string To { get; set; } = string.Empty;
+  //public Guid Sender { get; set; } = Guid.Empty;
 
-  public ChatMessage(string sender, string content)
+  public string Content { get; set; } = string.Empty;
+
+  public DateTime Timestamp { get; } = DateTime.UtcNow;
+
+  public ChatMessage(string content)
   {
-    Sender = sender;
+    //  Sender = sender;
     Content = content;
   }
 
-  public override string ToString()
-  {
-    return $"{Timestamp:HH:mm:ss} [{Sender}]: {Content}";
-  }
+  // public override string ToString()
+  // {
+  //   return $"{Timestamp:HH:mm:ss} [{Sender}]: {Content}";
+  // }
 }

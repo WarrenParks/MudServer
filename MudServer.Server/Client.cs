@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using MudServer.Server.Models;
 using MudServer.Server.Services;
-using MudServer.Services;
 
 namespace MudServer;
 
@@ -12,12 +11,14 @@ public class Client(
   IHttpContextAccessor httpContextAccessor,
   IConnectionManager connectionManager,
   IActionManager actionManager,
+  IChatManager chatManager,
   JsonSerializerOptions jsonSerializerOptions) : IHostedService
 {
   private readonly ILogger<Client> logger = logger;
   private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
   private readonly IConnectionManager connectionManager = connectionManager;
   private readonly IActionManager actionManager = actionManager;
+  private readonly IChatManager chatManager = chatManager;
   private readonly JsonSerializerOptions jsonSerializerOptions = jsonSerializerOptions;
   private readonly Guid clientId = Guid.NewGuid();
 
@@ -47,75 +48,81 @@ public class Client(
         break;
 
       string message = Encoding.UTF8.GetString(messageBuffer.ToArray());
-      // Parse JSON here
+
+      GameAction? gameAction = null!;
+      JsonDocument jsonDocument = null!;
+
       try
       {
-        var json = JsonDocument.Parse(message);
-        this.logger.LogInformation("Client {ClientId} Received JSON: {Json}", clientId, json.RootElement);
+        jsonDocument = JsonDocument.Parse(message);
+        this.logger.LogInformation("Client {ClientId} Received JSON: {Json}", clientId, jsonDocument.RootElement);
 
-        var gameAction = json.Deserialize<GameAction>(this.jsonSerializerOptions);
-
-        // Handle your JSON message here
-        if (gameAction != null)
-        {
-          switch (gameAction.Action)
-          {
-            case Actions.Ping:
-              // Respond to ping
-              var response = new { action = "pong", this.clientId };
-              var responseJson = JsonSerializer.Serialize(response);
-              var responseBytes = Encoding.UTF8.GetBytes(responseJson);
-              await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, cancellationToken);
-              break;
-
-            case Actions.Broadcast:
-              // Handle broadcast action
-              if (json.RootElement.TryGetProperty("message", out var messageContent))
-              {
-                var broadcastMessage = new { action = "broadcast", this.clientId, message = messageContent.GetString() };
-                var broadcastJson = JsonSerializer.Serialize(broadcastMessage);
-                var broadcastBytes = Encoding.UTF8.GetBytes(broadcastJson);
-
-                // Broadcast to all connected clients
-                foreach (var connection in this.connectionManager.GetAllConnections())
-                {
-                  if (connection.Key != this.clientId) // Don't send to self
-                  {
-                    await connection.Value.SendAsync(new ArraySegment<byte>(broadcastBytes), WebSocketMessageType.Text, true, cancellationToken);
-                  }
-                }
-              }
-              break;
-
-            case Actions.Defend:
-            case Actions.Heal:
-            case Actions.UseItem:
-            case Actions.Move:
-            case Actions.Attack:
-              this.actionManager.AddAction(gameAction);
-              this.logger.LogInformation("Client {ClientId} added action {gameAction} on ({X}, {Y})", clientId, gameAction.Action, gameAction.TargetX, gameAction.TargetY);
-              break;
-
-            case Actions.StartGame:
-              this.actionManager.AddAction(new GameAction()
-              {
-                Action = Actions.StartGame,
-                Priority = 1
-              });
-              this.logger.LogInformation("Client {ClientId} started the game.", clientId);
-              break;
-
-            default:
-              this.logger.LogWarning("Client {ClientId} Unknown", clientId);
-              break;
-          }
-        }
+        gameAction = jsonDocument.Deserialize<GameAction>(this.jsonSerializerOptions);
       }
       catch (JsonException je)
       {
         // Handle invalid JSON
         this.logger.LogWarning("Client {ClientId} Can't parse this: {Message}, exception message: {ExMes}", clientId, message, je.Message);
       }
+
+      // Handle your JSON message here
+      if (gameAction != null)
+      {
+        switch (gameAction.Action)
+        {
+          case Actions.Ping:
+            // Respond to ping
+            var response = new { action = "pong", this.clientId };
+            var responseJson = JsonSerializer.Serialize(response);
+            var responseBytes = Encoding.UTF8.GetBytes(responseJson);
+            await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, cancellationToken);
+            break;
+
+          case Actions.Broadcast:
+            var chatMessage = jsonDocument.Deserialize<ChatMessage>(this.jsonSerializerOptions);
+            //this.chatManager.BroadcastMessage(chatMessage);
+            // Handle broadcast action
+            // if (gameAction.json.RootElement.TryGetProperty("message", out var messageContent))
+            // {
+            //   var broadcastMessage = new { action = "broadcast", this.clientId, message = messageContent.GetString() };
+            //   var broadcastJson = JsonSerializer.Serialize(broadcastMessage);
+            //   var broadcastBytes = Encoding.UTF8.GetBytes(broadcastJson);
+
+            //   // Broadcast to all connected clients
+            //   foreach (var connection in this.connectionManager.GetAllConnections())
+            //   {
+            //     if (connection.Key != this.clientId) // Don't send to self
+            //     {
+            //       await connection.Value.SendAsync(new ArraySegment<byte>(broadcastBytes), WebSocketMessageType.Text, true, cancellationToken);
+            //     }
+            //   }
+            // }
+            break;
+
+          case Actions.Defend:
+          case Actions.Heal:
+          case Actions.UseItem:
+          case Actions.Move:
+          case Actions.Attack:
+            this.actionManager.AddAction(gameAction);
+            this.logger.LogInformation("Client {ClientId} added action {gameAction} on ({X}, {Y})", clientId, gameAction.Action, gameAction.TargetX, gameAction.TargetY);
+            break;
+
+          case Actions.StartGame:
+            this.actionManager.AddAction(new GameAction()
+            {
+              Action = Actions.StartGame,
+              Priority = 1
+            });
+            this.logger.LogInformation("Client {ClientId} started the game.", clientId);
+            break;
+
+          default:
+            this.logger.LogWarning("Client {ClientId} Unknown", clientId);
+            break;
+        }
+      }
+
     }
 
     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);

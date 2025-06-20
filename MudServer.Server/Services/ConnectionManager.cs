@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
 
-namespace MudServer.Services;
+namespace MudServer.Server.Services;
 
 public interface IConnectionManager
 {
