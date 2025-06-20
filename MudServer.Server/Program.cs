@@ -13,7 +13,7 @@ var jsonSerializerOptions = new JsonSerializerOptions
 jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddTransient<Client>();
+builder.Services.AddTransient<WebSocketConnectionHandler>();
 builder.Services.AddSingleton<GameLoop>();
 builder.Services.AddSingleton<IConnectionManager, ConnectionManager>();
 builder.Services.AddSingleton<IActionManager, ActionManager>();
@@ -28,8 +28,8 @@ app.Use(async (context, next) =>
 {
   if (context.WebSockets.IsWebSocketRequest)
   {
-    var client = context.RequestServices.GetRequiredService<Client>();
-    await client.StartAsync(CancellationToken.None);
+    var webSocketConnectionHandler = context.RequestServices.GetRequiredService<WebSocketConnectionHandler>();
+    await webSocketConnectionHandler.StartAsync(CancellationToken.None);
   }
   else
   {

@@ -6,15 +6,15 @@ using MudServer.Server.Services;
 
 namespace MudServer;
 
-public class Client(
-  ILogger<Client> logger,
+public class WebSocketConnectionHandler(
+  ILogger<WebSocketConnectionHandler> logger,
   IHttpContextAccessor httpContextAccessor,
   IConnectionManager connectionManager,
   IActionManager actionManager,
   IChatManager chatManager,
   JsonSerializerOptions jsonSerializerOptions) : IHostedService
 {
-  private readonly ILogger<Client> logger = logger;
+  private readonly ILogger<WebSocketConnectionHandler> logger = logger;
   private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
   private readonly IConnectionManager connectionManager = connectionManager;
   private readonly IActionManager actionManager = actionManager;

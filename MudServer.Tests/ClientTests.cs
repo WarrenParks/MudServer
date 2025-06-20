@@ -17,7 +17,7 @@ namespace MudServer.Tests;
 
 public class ClientTests
 {
-  private readonly Mock<ILogger<Client>> _loggerMock;
+  private readonly Mock<ILogger<WebSocketConnectionHandler>> _loggerMock;
   private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
   private readonly Mock<IConnectionManager> _connectionManagerMock;
   private readonly Mock<IActionManager> _actionManagerMock;
@@ -29,7 +29,7 @@ public class ClientTests
 
   public ClientTests()
   {
-    _loggerMock = new Mock<ILogger<Client>>();
+    _loggerMock = new Mock<ILogger<WebSocketConnectionHandler>>();
     _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
     _connectionManagerMock = new Mock<IConnectionManager>();
     _actionManagerMock = new Mock<IActionManager>();
@@ -154,9 +154,9 @@ public class ClientTests
   }
 
   // Helper methods
-  private Client CreateClient()
+  private WebSocketConnectionHandler CreateClient()
   {
-    return new Client(
+    return new WebSocketConnectionHandler(
         _loggerMock.Object,
         _httpContextAccessorMock.Object,
         _connectionManagerMock.Object,
