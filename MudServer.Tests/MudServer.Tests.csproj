@@ -14,4 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\MudServer.Server\MudServer.Server.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 </Project>

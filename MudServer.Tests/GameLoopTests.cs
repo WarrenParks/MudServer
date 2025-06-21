@@ -1,9 +1,12 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-using MudServer.Server.Models;
+
 using Moq;
+
+using MudServer.Server.Models;
 using MudServer.Server.Services;
+
+using Xunit;
 
 namespace MudServer.Tests
 {
