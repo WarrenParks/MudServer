@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +19,12 @@ namespace MudServer.Tests
         {
             // Arrange
             var actionManager = new Mock<IActionManager>();
+            actionManager
+                .Setup(am => am.CollectActionsAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Enumerable.Empty<GameAction>());
             var gameStateManager = new Mock<IGameStateManager>();
+            gameStateManager
+                .Setup(gsm => gsm.StartTurn()).Returns(new Turn(1));
             this.GameLoop = new GameLoop(actionManager.Object, gameStateManager.Object);
         }
 
@@ -47,7 +53,7 @@ namespace MudServer.Tests
         public async Task StartAsync_ShouldTransitionPhases()
         {
             // Arrange
-            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationTokenSource = new CancellationTokenSource(10);
             var phaseChangedCount = 0;
 
             this.GameLoop.OnPhaseChanged += (phase, turnNumber) =>
@@ -57,7 +63,7 @@ namespace MudServer.Tests
 
             // Act
             var task = this.GameLoop.StartAsync(cancellationTokenSource.Token);
-            await Task.Delay(5000); // Allow some time for phases to change
+            await Task.Delay(5); // Allow some time for phases to change
             cancellationTokenSource.Cancel(); // Stop the game loop
 
             // Assert
@@ -68,14 +74,14 @@ namespace MudServer.Tests
         public async Task StartAsync_ShouldIncrementTurnNumber()
         {
             // Arrange
-            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationTokenSource = new CancellationTokenSource(10);
 
             // Act
             var task = this.GameLoop.StartAsync(cancellationTokenSource.Token);
-            await Task.Delay(5000); // Allow some time for the game loop to run
+            await Task.Delay(5); // Allow some time for phases to change
+            if (task.Exception != null) throw task.Exception;
             cancellationTokenSource.Cancel(); // Stop the game loop
 
-            // Assert
             Assert.True(this.GameLoop.TurnNumber > 1);
         }
     }

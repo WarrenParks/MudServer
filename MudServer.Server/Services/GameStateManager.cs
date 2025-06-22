@@ -6,6 +6,10 @@ public interface IGameStateManager
 {
     Task WaitForStartAsync(CancellationToken cancellationToken);
 
+    void EndTurn(Turn turn);
+
+    Turn StartTurn();
+
     public GameState GameState { get; set; }
 }
 
@@ -14,6 +18,16 @@ public class GameStateManager(ILogger<GameStateManager> logger) : IGameStateMana
     private readonly ILogger<GameStateManager> logger = logger;
 
     public GameState GameState { get; set; } = null!; // This should be initialized with the actual game state when the game starts
+
+    public void EndTurn(Turn turn)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Turn StartTurn()
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task WaitForStartAsync(CancellationToken cancellationToken)
     {

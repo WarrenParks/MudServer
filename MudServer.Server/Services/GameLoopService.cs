@@ -1,15 +1,21 @@
 using MudServer.Server.Models;
 
+namespace MudServer.Server.Services;
+
 public class GameLoopService(
-  ILogger<GameLoopService> logger,
-  GameLoop gameLoop) : BackgroundService
+    IGameStateManager gameStateManager,
+    ILogger<GameLoopService> logger,
+    GameLoop gameLoop) : BackgroundService
 {
+    private readonly IGameStateManager gameStateManager = gameStateManager;
     private readonly ILogger<GameLoopService> logger = logger;
     private readonly GameLoop gameLoop = gameLoop;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         this.logger.LogInformation("Game Loop Service is starting.");
+
+        await this.gameStateManager.WaitForStartAsync(stoppingToken);
 
         this.gameLoop.OnPhaseChanged += (phase, turnNumber) =>
         {
@@ -18,6 +24,6 @@ public class GameLoopService(
             // Here you can add logic to broadcast the phase change to connected clients
         };
 
-        return this.gameLoop.StartAsync(stoppingToken);
+        await this.gameLoop.StartAsync(stoppingToken);
     }
 }

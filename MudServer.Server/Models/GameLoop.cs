@@ -24,12 +24,6 @@ public class GameLoop(
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        // wait for the game start action to be triggered
-        //var gameOptions = await this.actionManager.WaitForActionAsync<GameOptions>(Actions.StartGame, cancellationToken);
-        // in future get this from the action manager as part of the game start action
-
-        await this.gameStateManager.WaitForStartAsync(cancellationToken);
-
         // var gameOptions = new GameOptions
         // {
         //   GameName = "Test Game",
@@ -47,17 +41,18 @@ public class GameLoop(
             turn.Actions = await this.GetActionsForTurnAsync(cancellationToken);
             turn.Outcomes = this.ProcessActions(turn.Actions, this.gameStateManager.GameState);
 
-            this.EndTurn(turn, this.gameStateManager.GameState);
+            this.EndTurn(turn);
         }
     }
 
-    private void EndTurn(Turn turn, GameState gameState)
+    private void EndTurn(Turn turn)
     {
         // Turn End Phase
         CurrentPhase = Phase.TurnEnd;
         this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
+
+        this.gameStateManager.EndTurn(turn);
         // TODO: Broadcast results and handle end-of-turn effects
-        gameState.Turns.Add(turn);
         TurnNumber++;
     }
 
@@ -86,7 +81,8 @@ public class GameLoop(
     private Turn StartTurn()
     {
         // Turn Start Phase
-        var turn = new Turn(this.TurnNumber);
+        var turn = this.gameStateManager.StartTurn();
+
         CurrentPhase = Phase.TurnStart;
         this.OnPhaseChanged?.Invoke(CurrentPhase, TurnNumber);
 

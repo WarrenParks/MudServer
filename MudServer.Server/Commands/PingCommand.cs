@@ -8,11 +8,10 @@ public class PingCommand(
     IChatManager chatManager) : IGameCommand
 {
     private readonly ILogger<PingCommand> logger = logger;
+
     private readonly IChatManager chatManager = chatManager;
 
     public string ActionType => "ping";
-
-    public string Description => "Checks if the server is responsive.";
 
     public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
