@@ -29,7 +29,7 @@ public class MoveCommandTests
     this.actionManagerMock = new Mock<IActionManager>();
     this.loggerMock = new Mock<ILogger<MoveCommand>>();
     this.moveCommand = new MoveCommand(actionManagerMock.Object, loggerMock.Object);
-    webContext = new WebSocketContext(null, Guid.NewGuid());
+    this.webContext = new WebSocketContext(null, Guid.NewGuid());
 
     this.cancellationToken = new CancellationToken();
   }

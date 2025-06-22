@@ -6,7 +6,7 @@ namespace MudServer.Server.Services;
 
 public interface IChatManager
 {
-    public Task SendMessageAsync(string message, Guid toClientId, CancellationToken cancellationToken);
+    public Task SendMessageAsync(string message, Guid fromClientId, CancellationToken cancellationToken);
     public Task SendMessageAsync(string message, Guid fromClientId, Guid toClientId, CancellationToken cancellationToken);
 }
 
@@ -32,8 +32,8 @@ public class ChatManager(
         // Here you would typically use the connection manager to get the WebSocket and send the message
     }
 
-    public async Task SendMessageAsync(string message, Guid toClientId, CancellationToken cancellationToken)
+    public async Task SendMessageAsync(string message, Guid fromClientId, CancellationToken cancellationToken)
     {
-        await this.SendMessageAsync(message, Guid.Empty, toClientId, cancellationToken);
+        await this.SendMessageAsync(message, fromClientId, Guid.Empty, cancellationToken);
     }
 }
