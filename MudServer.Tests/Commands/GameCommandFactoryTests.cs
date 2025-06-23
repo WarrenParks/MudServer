@@ -123,7 +123,7 @@ public class GameCommandFactoryTests
   {
     // Arrange
     var pingJson = @"{""action"": ""ping""}";
-    var pingCommand = new PingCommand(Mock.Of<ILogger<PingCommand>>(), Mock.Of<IChatManager>());
+    var pingCommand = new PingCommand(Mock.Of<ILogger<PingCommand>>(), Mock.Of<INotificationManager>());
 
     serviceProviderMock
         .Setup(sp => sp.GetService(typeof(PingCommand)))

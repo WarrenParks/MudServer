@@ -18,30 +18,31 @@ public class PingCommandTests
 {
     private readonly PingCommand pingCommand;
 
-    private readonly Mock<IChatManager> chatManagerMock;
+    private readonly Mock<INotificationManager> notificationManagerMock;
     private readonly Mock<Server.Commands.WebSocketContext> _contextMock;
 
     public PingCommandTests()
     {
         this._contextMock = new Mock<Server.Commands.WebSocketContext>(MockBehavior.Strict, new Mock<WebSocket>().Object, Guid.NewGuid());
-        this.chatManagerMock = new Mock<IChatManager>(MockBehavior.Strict);
+        this.notificationManagerMock = new Mock<INotificationManager>(MockBehavior.Strict);
 
         var logger = new Mock<ILogger<PingCommand>>();
 
-        this.pingCommand = new PingCommand(logger.Object, this.chatManagerMock.Object);
+        this.pingCommand = new PingCommand(logger.Object, this.notificationManagerMock.Object);
     }
 
-    // Ignore this test for now
-    [Fact(Skip = "This test is currently skipped because notification manager not implemented.")]
+    [Fact]
     public async Task ExecuteAsync_ShouldSendPongNotificationToClient()
     {
         // Arrange
         var cancellationToken = CancellationToken.None;
+        this.notificationManagerMock
+            .Setup(n => n.NotifyClient(It.IsAny<Guid>(), It.Is<string>(s => s == "Pong! from server to user")));
 
         // Act
         await this.pingCommand.ExecuteAsync(_contextMock.Object, cancellationToken);
 
         // Assert
-        // check notification manager was called
+        this.notificationManagerMock.Verify(n => n.NotifyClient(_contextMock.Object.ClientId, "Pong! from server to user"), Times.Once);
     }
 }
