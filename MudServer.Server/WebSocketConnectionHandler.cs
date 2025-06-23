@@ -81,7 +81,7 @@ public class WebSocketConnectionHandler(
     {
         try
         {
-            var command = await this.commandFactory.CreateCommandAsync(message);
+            var command = this.commandFactory.CreateCommand(message);
 
             if (command != null)
             {

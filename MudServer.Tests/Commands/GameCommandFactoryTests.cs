@@ -1,8 +1,5 @@
 using System;
 using System.Text.Json;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
 
 using Microsoft.Extensions.Logging;
 
@@ -37,14 +34,60 @@ public class GameCommandFactoryTests
   }
 
   [Fact]
-  public async Task CreateCommandAsync_BadJson_LogsWarningReturnsInvalidCommand()
+  public void CreateCommand_NoActionProperty_ReturnsInvalidCommand()
+  {
+    // Arrange
+    var jsonWithoutAction = @"{""someProperty"": ""value""}";
+    var expectedError = "Missing required 'action' property";
+
+    // Act
+    var result = this.gameCommandFactory.CreateCommand(jsonWithoutAction);
+
+    // Assert
+    Assert.IsType<InvalidCommand>(result);
+    Assert.Equal(expectedError, ((InvalidCommand)result).ErrorMessage);
+    this.loggerMock.Verify(
+        x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => true),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+        Times.Once);
+  }
+
+  [Fact]
+  public void CreateCommand_ActionTypeNotMapped_ReturnsInvalidCommand()
+  {
+    // Arrange
+    var unmappedActionJson = @"{""action"": ""unknownAction""}";
+    var expectedError = $"Invalid action type: unknownaction"; // actions are lowercased in the factory
+
+    // Act
+    var result = this.gameCommandFactory.CreateCommand(unmappedActionJson);
+
+    // Assert
+    Assert.IsType<InvalidCommand>(result);
+    Assert.Equal(expectedError, ((InvalidCommand)result).ErrorMessage);
+    this.loggerMock.Verify(
+        x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => true),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+        Times.Once);
+  }
+
+  [Fact]
+  public void CreateCommand_BadJson_LogsWarningReturnsInvalidCommand()
   {
     // Arrange
     var invalidJson = "this is not valid json";
     var expectedCommand = new InvalidCommand($"Invalid JSON Submitted: {invalidJson}");
 
     // Act
-    var actualCommand = await this.gameCommandFactory.CreateCommandAsync(invalidJson);
+    var actualCommand = this.gameCommandFactory.CreateCommand(invalidJson);
 
     // Assert
     Assert.IsType<InvalidCommand>(actualCommand);
@@ -52,7 +95,7 @@ public class GameCommandFactoryTests
   }
 
   [Fact]
-  public async Task CreateCommandAsync_MoveCommand_DeserializesProperties()
+  public void CreateCommand_MoveCommand_DeserializesProperties()
   {
     // Arrange
     var moveJson = @"{""action"": ""move"", ""priority"": 5, ""targetX"": 10, ""targetY"": 20}";
@@ -65,7 +108,7 @@ public class GameCommandFactoryTests
         .Returns(moveCommand);
 
     // Act
-    var result = await this.gameCommandFactory.CreateCommandAsync(moveJson);
+    var result = this.gameCommandFactory.CreateCommand(moveJson);
 
     // Assert
     Assert.NotNull(result);
@@ -76,7 +119,7 @@ public class GameCommandFactoryTests
   }
 
   [Fact]
-  public async Task CreateCommandAsync_PingCommand_CreatesWithDependencyInjection()
+  public void CreateCommand_PingCommand_CreatesWithDependencyInjection()
   {
     // Arrange
     var pingJson = @"{""action"": ""ping""}";
@@ -87,7 +130,7 @@ public class GameCommandFactoryTests
         .Returns(pingCommand);
 
     // Act
-    var result = await this.gameCommandFactory.CreateCommandAsync(pingJson);
+    var result = this.gameCommandFactory.CreateCommand(pingJson);
 
     // Assert
     Assert.NotNull(result);

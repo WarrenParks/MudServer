@@ -15,10 +15,14 @@ var jsonSerializerOptions = new JsonSerializerOptions
 jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<IChatManager, ChatManager>();
+builder.Services.AddTransient<MoveCommand>();
+builder.Services.AddTransient<INotificationManager, NotificationManager>();
+builder.Services.AddTransient<PingCommand>();
+builder.Services.AddTransient<StartGameCommand>();
 builder.Services.AddTransient<WebSocketConnectionHandler>();
 builder.Services.AddSingleton<GameLoop>();
 builder.Services.AddSingleton<IActionManager, ActionManager>();
-builder.Services.AddSingleton<IChatManager, ChatManager>();
 builder.Services.AddSingleton<IConnectionManager, ConnectionManager>();
 builder.Services.AddSingleton<IGameCommandFactory, GameCommandFactory>();
 builder.Services.AddSingleton<IGameStateManager, GameStateManager>();

@@ -4,7 +4,7 @@ namespace MudServer.Server.Commands;
 
 public interface IGameCommandFactory
 {
-    Task<IGameCommand?> CreateCommandAsync(string json);
+    IGameCommand CreateCommand(string json);
 }
 
 public class GameCommandFactory(
@@ -27,33 +27,39 @@ public class GameCommandFactory(
         // Add more mappings as you create them
     };
 
-    public Task<IGameCommand?> CreateCommandAsync(string json)
+    public IGameCommand CreateCommand(string json)
     {
         try
         {
             // First parse to get the action type
             using var document = JsonDocument.Parse(json);
             if (!document.RootElement.TryGetProperty("action", out var actionElement))
-                return Task.FromResult<IGameCommand?>(null);
+            {
+                // Log error and return InvalidCommand if 'action' property is missing
+                logger.LogError("Missing required 'action' property in JSON: {Json}", json);
+                return new InvalidCommand("Missing required 'action' property");
+            }
 
             string actionType = actionElement.GetString()?.ToLower() ?? string.Empty;
 
             // Find matching command type
             if (!commandTypes.TryGetValue(actionType, out var commandType))
-                return Task.FromResult<IGameCommand?>(null);
+            {
+                logger.LogError("Invalid action type: {ActionType} in JSON: {Json}", actionType, json);
+                return new InvalidCommand($"Invalid action type: {actionType}");
+            }
 
             var command = (IGameCommand)this.serviceProvider.GetService(commandType)!;
 
             this.PopulateObjectFromJson(document, command, commandType);
 
-            return Task.FromResult<IGameCommand?>(command);
+            return command;
         }
         catch (JsonException ex)
         {
             logger.LogError(ex, "Failed to create command from JSON: {Json}", json);
 
-            return Task.FromResult<IGameCommand?>(
-              new InvalidCommand($"Invalid JSON Submitted: {json}"));
+            return new InvalidCommand($"Invalid JSON Submitted: {json}");
         }
     }
 
