@@ -66,11 +66,9 @@ public class GameCommandFactory(
     // Helper method to populate an existing object from JSON
     private void PopulateObjectFromJson(JsonDocument document, IGameCommand command, Type commandType)
     {
-        foreach (var property in commandType.GetProperties())
+        foreach (var property in commandType.GetProperties().Where(p => p.CanWrite && p.GetCustomAttribute<JsonPropertyAttribute>() != null))
         {
-            // Skip read-only properties
-            if (!property.CanWrite)
-                continue;
+            // Skip properties not marked with [JsonProperty] or not writable
 
             // Try to get the property from JSON (case insensitive)
             var propertyFound = false;

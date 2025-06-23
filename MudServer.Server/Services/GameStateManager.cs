@@ -21,12 +21,24 @@ public class GameStateManager(ILogger<GameStateManager> logger) : IGameStateMana
 
     public void EndTurn(Turn turn)
     {
-        throw new NotImplementedException();
+        // Update the game state to reflect the end of the current turn
+        this.logger.LogInformation("Ending turn: {TurnId}", turn.Id);
+        turn.EndTime = DateTime.UtcNow;
+        this.GameState.CurrentTurn = null; // Clear the current turn
+        this.logger.LogInformation("Turn ended successfully.");
     }
 
     public Turn StartTurn()
     {
-        throw new NotImplementedException();
+        // Initialize and return a new turn
+        var newTurn = new Turn
+        {
+            Id = Guid.NewGuid(),
+            StartTime = DateTime.UtcNow
+        };
+        this.GameState.CurrentTurn = newTurn; // Set the new turn as the current turn
+        this.logger.LogInformation("Starting new turn: {TurnId}", newTurn.Id);
+        return newTurn;
     }
 
     public async Task WaitForStartAsync(CancellationToken cancellationToken)

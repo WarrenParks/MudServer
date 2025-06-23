@@ -23,6 +23,15 @@ public class ChatCommand(IChatManager chatManager) : IGameCommand
     {
         // Here you would typically send the chat message to the chat manager or similar service
         // For example:
-        await chatManager.SendMessageAsync(this.Message, context.ClientId, cancellationToken);
+        if (TargetClientId == Guid.Empty || TargetClientId == null)
+        {
+            // Broadcast the message to all clients
+            await chatManager.BroadcastMessageAsync(this.Message, cancellationToken);
+        }
+        else
+        {
+            // Send the message to the specified client
+            await chatManager.SendMessageAsync(this.Message, TargetClientId, cancellationToken);
+        }
     }
 }
