@@ -15,23 +15,21 @@ public class ChatCommand(IChatManager chatManager) : IGameCommand
     /// </summary>
     public Guid TargetClientId { get; set; }
 
-    public required Guid FromClientId { get; set; }
+    public Guid FromClientId { get; set; }
 
-    public required string Message { get; set; }
+    public string Message { get; set; } = null!;
 
     public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
-        // Here you would typically send the chat message to the chat manager or similar service
-        // For example:
-        if (TargetClientId == Guid.Empty || TargetClientId == null)
+        if (TargetClientId == Guid.Empty)
         {
-            // Broadcast the message to all clients
-            await chatManager.BroadcastMessageAsync(this.Message, cancellationToken);
+            // Send the message to all clients
+            await chatManager.SendMessageAsync(this.Message, context.ClientId, cancellationToken);
         }
         else
         {
             // Send the message to the specified client
-            await chatManager.SendMessageAsync(this.Message, TargetClientId, cancellationToken);
+            await chatManager.SendMessageAsync(this.Message, context.ClientId, TargetClientId, cancellationToken);
         }
     }
 }

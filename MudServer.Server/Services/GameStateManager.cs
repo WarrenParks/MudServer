@@ -22,22 +22,22 @@ public class GameStateManager(ILogger<GameStateManager> logger) : IGameStateMana
     public void EndTurn(Turn turn)
     {
         // Update the game state to reflect the end of the current turn
-        this.logger.LogInformation("Ending turn: {TurnId}", turn.Id);
+        this.logger.LogInformation("Ending turn: {TurnNumber}", turn.TurnNumber);
         turn.EndTime = DateTime.UtcNow;
-        this.GameState.CurrentTurn = null; // Clear the current turn
         this.logger.LogInformation("Turn ended successfully.");
     }
 
     public Turn StartTurn()
     {
         // Initialize and return a new turn
-        var newTurn = new Turn
+        var newTurn = new Turn(this.GameState.Turns.Count + 1)
         {
-            Id = Guid.NewGuid(),
             StartTime = DateTime.UtcNow
         };
         this.GameState.CurrentTurn = newTurn; // Set the new turn as the current turn
-        this.logger.LogInformation("Starting new turn: {TurnId}", newTurn.Id);
+        this.logger.LogInformation("Starting new turn: {TurnNumber}", newTurn.TurnNumber);
+        this.GameState.Turns.Add(newTurn);
+
         return newTurn;
     }
 
