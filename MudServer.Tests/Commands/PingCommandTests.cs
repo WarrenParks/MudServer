@@ -37,7 +37,8 @@ public class PingCommandTests
         // Arrange
         var cancellationToken = CancellationToken.None;
         this.notificationManagerMock
-            .Setup(n => n.NotifyClient(It.IsAny<Guid>(), It.Is<string>(s => s == "Pong! from server to user")));
+            .Setup(n => n.NotifyClient(It.IsAny<Guid>(), It.Is<string>(s => s == "Pong! from server to user")))
+            .Returns(Task.CompletedTask);
 
         // Act
         await this.pingCommand.ExecuteAsync(_contextMock.Object, cancellationToken);
