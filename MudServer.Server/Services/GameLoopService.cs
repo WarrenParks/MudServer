@@ -31,7 +31,7 @@ public class GameLoopService(
         await this.gameLoop.StartAsync(stoppingToken);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         this.logger.LogInformation("Game Loop Service is stopping.");
 
@@ -41,6 +41,6 @@ public class GameLoopService(
             this.gameLoop.OnPhaseChanged -= this.phaseChangedHandler;
         }
 
-        return base.StopAsync(cancellationToken);
+        await base.StopAsync(cancellationToken);
     }
 }
