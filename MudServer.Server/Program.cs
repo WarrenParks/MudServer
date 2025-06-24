@@ -15,6 +15,7 @@ var jsonSerializerOptions = new JsonSerializerOptions
 jsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ChatCommand>();
 builder.Services.AddTransient<IChatManager, ChatManager>();
 builder.Services.AddTransient<MoveCommand>();
 builder.Services.AddTransient<INotificationManager, NotificationManager>();

@@ -22,7 +22,7 @@ public class GameCommandFactory(
         ["move"] = typeof(MoveCommand),
         // ["attack"] = typeof(AttackCommand),
         ["ping"] = typeof(PingCommand),
-        // ["chat"] = typeof(ChatCommand),
+        ["chat"] = typeof(ChatCommand),
         ["startgame"] = typeof(StartGameCommand)
         // Add more mappings as you create them
     };
