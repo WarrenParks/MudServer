@@ -1,6 +1,4 @@
-using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MudServer.Server.Commands;
 
@@ -68,11 +66,8 @@ public class GameCommandFactory(
     // Helper method to populate an existing object from JSON
     private void PopulateObjectFromJson(JsonDocument document, IGameCommand command, Type commandType)
     {
-        foreach (var property in commandType.GetProperties().Where(p => p.CanWrite && p.GetCustomAttribute<JsonAttribute>() != null))
+        foreach (var property in commandType.GetProperties().Where(p => p.CanWrite))
         {
-            // Skip properties not marked with [JsonProperty] or not writable
-
-            // Try to get the property from JSON (case insensitive)
             var propertyFound = false;
 
             // Case insensitive property lookup
