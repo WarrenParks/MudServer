@@ -1,5 +1,9 @@
 // JSON templates (could be loaded from a file in the future)
 const jsonTemplates = {
+  ChatAll: {
+    action: "chat",
+    message: "Hello, world!",
+  },
   Move: {
     action: "move",
     priority: 1,

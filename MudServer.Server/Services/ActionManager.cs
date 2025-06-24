@@ -6,7 +6,7 @@ public interface IActionManager
 {
     public void AddAction(GameAction action);
 
-    public Task<List<GameAction>> CollectActionsAsync(CancellationToken cancellationToken);
+    public Task<IEnumerable<GameAction>> CollectActionsAsync(CancellationToken cancellationToken);
 
     public Task<GameAction> WaitForActionAsync(Actions action, CancellationToken cancellationToken);
 }
@@ -32,7 +32,7 @@ public class ActionManager(ILogger<ActionManager> logger) : IActionManager
     /// <param name="cancellationToken">Cancellation token to stop the collection process.</param>
     /// <returns>A task that represents the asynchronous operation, containing a list of collected actions.</returns>
 
-    public Task<List<GameAction>> CollectActionsAsync(
+    public Task<IEnumerable<GameAction>> CollectActionsAsync(
         //Turn turn,
         CancellationToken cancellationToken)
     {
@@ -56,7 +56,7 @@ public class ActionManager(ILogger<ActionManager> logger) : IActionManager
             var actions = this.actions.ToList();
             this.actions.Clear(); // Clear the actions after collecting them
 
-            return actions;
+            return actions.AsEnumerable();
         }, cancellationToken);
     }
 

@@ -6,7 +6,7 @@ namespace MudServer.Server.Services;
 
 public interface IChatManager
 {
-    public Task SendMessageAsync(string message, Guid toClientId, CancellationToken cancellationToken);
+    public Task SendMessageAsync(string message, Guid fromClientId, CancellationToken cancellationToken);
     public Task SendMessageAsync(string message, Guid fromClientId, Guid toClientId, CancellationToken cancellationToken);
 }
 
@@ -24,7 +24,7 @@ public class ChatManager(
 
         var webSocket = this.connectionManager.GetConnection(toClientId);
 
-        var response = new { action = "chat", toClientId };
+        var response = new { action = "chat", toClientId, fromClientId, message };
         var responseJson = JsonSerializer.Serialize(response);
         var responseBytes = Encoding.UTF8.GetBytes(responseJson);
 
@@ -32,8 +32,15 @@ public class ChatManager(
         // Here you would typically use the connection manager to get the WebSocket and send the message
     }
 
-    public async Task SendMessageAsync(string message, Guid toClientId, CancellationToken cancellationToken)
+    public async Task SendMessageAsync(string message, Guid fromClientId, CancellationToken cancellationToken)
     {
-        await this.SendMessageAsync(message, Guid.Empty, toClientId, cancellationToken);
+        logger.LogInformation("Broadcasting message: {message} from {fromClientId}", message, fromClientId);
+
+        var connections = connectionManager.GetAllConnections();
+
+        foreach (var clientId in connections.Keys)
+        {
+            await SendMessageAsync(message, fromClientId, clientId, cancellationToken);
+        }
     }
 }

@@ -5,19 +5,19 @@ namespace MudServer.Server.Commands;
 
 public class PingCommand(
     ILogger<PingCommand> logger,
-    IChatManager chatManager) : IGameCommand
+    INotificationManager notificationManager) : IGameCommand
 {
     private readonly ILogger<PingCommand> logger = logger;
-    private readonly IChatManager chatManager = chatManager;
+
+    private readonly INotificationManager notificationManager = notificationManager;
 
     public string ActionType => "ping";
 
-    public string Description => "Checks if the server is responsive.";
-
-    public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
+    public Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
         logger.LogInformation("Ping command executed by user {UserId}", context.ClientId);
 
-        await this.chatManager.SendMessageAsync("Pong! from server to user", context.ClientId, cancellationToken);
+        this.notificationManager.NotifyClient(context.ClientId, "Pong! from server to user");
+        return Task.CompletedTask;
     }
 }
