@@ -1,0 +1,291 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #222;
+  color: #0f0;
+  line-height: 1.6;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+}
+
+/* Header */
+header {
+  background-color: #111;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+}
+
+#connection-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.connected {
+  background-color: #0f0;
+}
+
+.disconnected {
+  background-color: #f00;
+}
+
+/* Main content layout */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  background-color: #111;
+  padding: 15px;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+}
+
+#online-users {
+  list-style: none;
+}
+
+#online-users li {
+  padding: 5px 0;
+  border-bottom: 1px dotted #333;
+}
+
+.user-online::before {
+  content: "●";
+  color: #0f0;
+  margin-right: 5px;
+}
+
+/* Game area */
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  overflow: hidden;
+}
+
+.map-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  margin-bottom: 15px;
+}
+
+.map {
+  display: grid;
+  grid-template-columns: repeat(10, 30px);
+  grid-template-rows: repeat(10, 30px);
+  gap: 1px;
+}
+
+.map-tile {
+  width: 30px;
+  height: 30px;
+  background-color: #333;
+  border: 1px solid #555;
+  position: relative;
+}
+
+.player-tile {
+  position: relative;
+}
+
+.player-tile::after {
+  content: "@";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: yellow;
+  font-size: 18px;
+}
+
+.grass {
+  background-color: #063;
+}
+
+.wall {
+  background-color: #555;
+}
+
+.water {
+  background-color: #036;
+}
+
+/* Controls */
+.controls {
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.movement-controls {
+  display: grid;
+  grid-template-areas:
+    ". north ."
+    "west . east"
+    ". south .";
+  grid-gap: 5px;
+}
+
+.movement-controls button {
+  padding: 8px 15px;
+  background-color: #333;
+  border: 1px solid #0f0;
+  color: #0f0;
+  cursor: pointer;
+}
+
+.movement-controls button:hover {
+  background-color: #444;
+}
+
+#move-north {
+  grid-area: north;
+}
+
+#move-west {
+  grid-area: west;
+}
+
+#move-east {
+  grid-area: east;
+}
+
+#move-south {
+  grid-area: south;
+}
+
+.east-west {
+  display: flex;
+  gap: 40px;
+}
+
+/* Bottom panel */
+.bottom-panel {
+  height: 200px;
+  background-color: #111;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #333;
+}
+
+.tab-button {
+  padding: 8px 15px;
+  background-color: #222;
+  border: none;
+  color: #0f0;
+  cursor: pointer;
+  outline: none;
+}
+
+.tab-button.active {
+  background-color: #111;
+  border-bottom: 2px solid #0f0;
+}
+
+.tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-pane {
+  display: none;
+  height: 100%;
+  flex-direction: column;
+}
+
+.tab-pane.active {
+  display: flex;
+}
+
+.message-area {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.message {
+  margin-bottom: 5px;
+  word-wrap: break-word;
+}
+
+.system-message {
+  color: #ff6;
+}
+
+.user-message .username {
+  color: #6cf;
+  font-weight: bold;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid #333;
+  padding: 10px;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 8px;
+  background-color: #222;
+  border: 1px solid #333;
+  color: #0f0;
+  outline: none;
+}
+
+#send-chat {
+  padding: 0 15px;
+  background-color: #333;
+  border: 1px solid #0f0;
+  color: #0f0;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+#send-chat:hover {
+  background-color: #444;
+}

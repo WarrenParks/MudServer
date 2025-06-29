@@ -1,6 +1,4 @@
-using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
+using MudServer.Server.Models;
 
 namespace MudServer.Server.Services;
 
@@ -11,36 +9,25 @@ public interface IChatManager
 }
 
 public class ChatManager(
-  IConnectionManager connectionManager,
-  ILogger<ChatManager> logger) : IChatManager
+  IWebSocketMessenger webSocketMessenger,
+  IConnectionManager connectionManager) : IChatManager
 {
+    private readonly IWebSocketMessenger webSocketMessenger = webSocketMessenger;
     private readonly IConnectionManager connectionManager = connectionManager;
-    private readonly ILogger<ChatManager> logger = logger;
 
     public async Task SendMessageAsync(string message, Guid fromClientId, Guid toClientId, CancellationToken cancellationToken)
     {
-        // Implementation for sending a message to a specific client
-        logger.LogInformation("Sending message: {message} from {fromClientId} to {toClientId}: ", message, fromClientId, toClientId);
+        var fromUser = this.connectionManager.GetUser(fromClientId);
 
-        var webSocket = this.connectionManager.GetConnection(toClientId);
-
-        var response = new { action = "chat", toClientId, fromClientId, message };
-        var responseJson = JsonSerializer.Serialize(response);
-        var responseBytes = Encoding.UTF8.GetBytes(responseJson);
-
-        await webSocket.SendAsync(new ArraySegment<byte>(responseBytes), WebSocketMessageType.Text, true, cancellationToken);
-        // Here you would typically use the connection manager to get the WebSocket and send the message
+        await this.webSocketMessenger.SendMessageAsync(
+            Actions.Chat, new { fromUser = fromUser?.Name, message }, fromClientId, toClientId, cancellationToken);
     }
 
     public async Task SendMessageAsync(string message, Guid fromClientId, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Broadcasting message: {message} from {fromClientId}", message, fromClientId);
+        var fromUser = this.connectionManager.GetUser(fromClientId);
 
-        var connections = connectionManager.GetAllConnections();
-
-        foreach (var clientId in connections.Keys)
-        {
-            await SendMessageAsync(message, fromClientId, clientId, cancellationToken);
-        }
+        await this.webSocketMessenger.SendMessageAsync(
+            Actions.Chat, new { fromUser = fromUser?.Name, message }, fromClientId, cancellationToken);
     }
 }

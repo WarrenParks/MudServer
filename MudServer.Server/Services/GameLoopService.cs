@@ -3,10 +3,12 @@ using MudServer.Server.Models;
 namespace MudServer.Server.Services;
 
 public class GameLoopService(
+    IActionManager actionManager,
     IGameStateManager gameStateManager,
     ILogger<GameLoopService> logger,
     GameLoop gameLoop) : BackgroundService
 {
+    private readonly IActionManager actionManager = actionManager;
     private readonly IGameStateManager gameStateManager = gameStateManager;
     private readonly ILogger<GameLoopService> logger = logger;
     private readonly GameLoop gameLoop = gameLoop;
@@ -16,7 +18,7 @@ public class GameLoopService(
     {
         this.logger.LogInformation("Game Loop Service is starting.");
 
-        await this.gameStateManager.WaitForStartAsync(stoppingToken);
+        await this.actionManager.WaitForActionAsync(Actions.StartGame, stoppingToken);
 
         // Store the handler in a field so we can reference it for unsubscribing
         this.phaseChangedHandler = (phase, turnNumber) =>

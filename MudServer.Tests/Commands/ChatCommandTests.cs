@@ -17,6 +17,7 @@ public class ChatCommandTests
 {
     private readonly Mock<ILogger<ChatCommand>> loggerMock;
     private readonly Mock<IChatManager> chatManagerMock;
+    private readonly Mock<IConnectionManager> connectionManagerMock;
     private readonly WebSocketContext webContext;
     private readonly CancellationToken cancellationToken;
 
@@ -26,6 +27,7 @@ public class ChatCommandTests
         this.chatManagerMock = new Mock<IChatManager>();
         this.webContext = new WebSocketContext(null, Guid.NewGuid());
         this.cancellationToken = new CancellationToken();
+        this.connectionManagerMock = new Mock<IConnectionManager>();
 
         this.chatManagerMock
             .Setup(cm => cm.SendMessageAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -36,7 +38,7 @@ public class ChatCommandTests
     public async Task ExecuteAsync_ShouldSendMessageToChatManager()
     {
         // Arrange
-        var chatCommand = new ChatCommand(chatManagerMock.Object)
+        var chatCommand = new ChatCommand(chatManagerMock.Object, connectionManagerMock.Object)
         {
             Message = "Hello World",
             FromClientId = Guid.NewGuid()

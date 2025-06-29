@@ -32,52 +32,60 @@ public class ActionManager(ILogger<ActionManager> logger) : IActionManager
     /// <param name="cancellationToken">Cancellation token to stop the collection process.</param>
     /// <returns>A task that represents the asynchronous operation, containing a list of collected actions.</returns>
 
-    public Task<IEnumerable<GameAction>> CollectActionsAsync(
-        //Turn turn,
-        CancellationToken cancellationToken)
+    public async Task<IEnumerable<GameAction>> CollectActionsAsync(CancellationToken cancellationToken)
     {
-        // This method will collect actions from the action submission phase.
-        // It will wait for a specified time or until the cancellation token is triggered.
+        var collectedActions = new List<GameAction>();
+        var startTime = DateTime.UtcNow;
+        const int timeoutSeconds = 60;
 
-        return Task.Run(async () =>
+        logger.LogInformation("Starting action collection phase");
+
+        while ((DateTime.UtcNow - startTime).TotalSeconds < timeoutSeconds && !cancellationToken.IsCancellationRequested)
         {
-            //var actions = new List<GameAction>();
-            var startTime = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - startTime).TotalSeconds < 60 && !cancellationToken.IsCancellationRequested)
+            // Collect any available actions
+            while (actions.TryDequeue(out var action))
             {
-                // Simulate waiting for actions to be added
-                await Task.Delay(1000, cancellationToken);
-
-                // Here we would normally check if any actions have been added
-                // For now, we just return an empty list after the delay
+                collectedActions.Add(action);
             }
 
-            var actions = this.actions.ToList();
-            this.actions.Clear(); // Clear the actions after collecting them
+            try
+            {
+                await Task.Delay(100, cancellationToken); // Shorter delay for responsiveness
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Action collection cancelled during shutdown");
+                break;
+            }
+        }
 
-            return actions.AsEnumerable();
-        }, cancellationToken);
+        logger.LogInformation("Collected {Count} actions", collectedActions.Count);
+        return collectedActions;
     }
 
     public async Task<GameAction> WaitForActionAsync(Actions action, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            if (this.actions.TryDequeue(out var gameAction))
+            // Check for start game actions
+            if (actions.TryDequeue(out var gameAction) && gameAction?.Action == action)
             {
-                if (gameAction != null && gameAction.Action == action)
-                {
-                    this.logger.LogInformation("Action found: {Action}", gameAction);
-                    return gameAction;
-                }
+                this.logger.LogInformation("Action found: {Action}", gameAction);
+                return gameAction;
             }
 
             // wait for a short period before checking again
-            await Task.Delay(100, cancellationToken);
+            try
+            {
+                await Task.Delay(50, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Game start wait cancelled during shutdown");
+                throw;
+            }
         }
 
-        // If cancelled, throw an OperationCanceledException
         throw new OperationCanceledException(cancellationToken);
     }
 }

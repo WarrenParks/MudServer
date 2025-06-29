@@ -13,11 +13,10 @@ public class PingCommand(
 
     public string ActionType => "ping";
 
-    public Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
         logger.LogInformation("Ping command executed by user {UserId}", context.ClientId);
 
-        this.notificationManager.NotifyClient(context.ClientId, "Pong! from server to user");
-        return Task.CompletedTask;
+        await this.notificationManager.NotifyClientAsync(context.ClientId, "Pong! from server to user", cancellationToken);
     }
 }

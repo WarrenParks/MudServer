@@ -2,10 +2,12 @@ using MudServer.Server.Services;
 
 namespace MudServer.Server.Commands;
 
-public class ChatCommand(IChatManager chatManager) : IGameCommand
+public class ChatCommand(
+    IChatManager chatManager,
+    IConnectionManager connectionManager) : IGameCommand
 {
     private readonly IChatManager chatManager = chatManager;
-
+    private readonly IConnectionManager connectionManager = connectionManager;
 
     public string ActionType => "chat";
 
@@ -15,12 +17,24 @@ public class ChatCommand(IChatManager chatManager) : IGameCommand
     /// </summary>
     public Guid TargetClientId { get; set; }
 
+    public string TargetUserName { get; set; } = null!;
+
     public Guid FromClientId { get; set; }
 
     public string Message { get; set; } = null!;
 
     public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
+        if (TargetUserName != null)
+        {
+            // Look up the client ID by user name
+            var user = connectionManager.GetUserByName(TargetUserName);
+            if (user != null)
+            {
+                TargetClientId = user.Id;
+            }
+        }
+
         if (TargetClientId == Guid.Empty)
         {
             // Send the message to all clients

@@ -1,6 +1,11 @@
 // JSON templates (could be loaded from a file in the future)
 const jsonTemplates = {
-  ChatAll: {
+  Register: {
+    action: "register",
+    username: "Player1",
+    key: "your-key-here",
+  },
+  Chat: {
     action: "chat",
     message: "Hello, world!",
   },
@@ -20,6 +25,9 @@ const jsonTemplates = {
   },
   Ping: {
     action: "ping",
+  },
+  Shutdown: {
+    action: "stopserver",
   },
 };
 

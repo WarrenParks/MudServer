@@ -65,16 +65,27 @@ public class WebSocketConnectionHandler(
         var messageBuffer = new List<byte>();
         WebSocketReceiveResult result;
 
-        do
+        try
         {
-            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
-            messageBuffer.AddRange(buffer.Take(result.Count));
-        } while (!result.EndOfMessage);
+            do
+            {
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
 
-        if (result.MessageType == WebSocketMessageType.Close)
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed", cancellationToken);
+                    return null;
+                }
+
+                messageBuffer.AddRange(buffer.Take(result.Count));
+            } while (!result.EndOfMessage && !cancellationToken.IsCancellationRequested);
+
+            return messageBuffer.Count > 0 ? Encoding.UTF8.GetString(messageBuffer.ToArray()) : null;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
             return null;
-
-        return Encoding.UTF8.GetString(messageBuffer.ToArray());
+        }
     }
 
     private async Task ProcessMessage(string message, WebSocket webSocket, CancellationToken cancellationToken)

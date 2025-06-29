@@ -1,5 +1,7 @@
 using System.Net.WebSockets;
 
+using MudServer.Server.Models;
+
 namespace MudServer.Server.Services;
 
 public interface INotificationManager
@@ -8,33 +10,32 @@ public interface INotificationManager
     /// Sends a notification to all connected clients.
     /// </summary>
     /// <param name="message">The message to send.</param>
-    Task NotifyAll(string message);
+    Task NotifyAllAsync(string message, CancellationToken cancellationToken);
 
     /// <summary>
     /// Sends a notification to a specific client.
     /// </summary>
     /// <param name="clientId">The ID of the client to notify.</param>
     /// <param name="message">The message to send.</param>
-    Task NotifyClient(Guid clientId, string message);
+    Task NotifyClientAsync(Guid clientId, string message, CancellationToken cancellationToken);
 }
 
-public class NotificationManager(IConnectionManager connectionManager) : INotificationManager
+public class NotificationManager(
+    IConnectionManager connectionManager,
+    ILogger<NotificationManager> logger,
+    IWebSocketMessenger webSocketMessenger) : INotificationManager
 {
     private readonly IConnectionManager connectionManager = connectionManager;
+    private readonly ILogger<NotificationManager> logger = logger;
+    private readonly IWebSocketMessenger webSocketMessenger = webSocketMessenger;
 
-    public async Task NotifyAll(string message)
+    public async Task NotifyAllAsync(string message, CancellationToken cancellationToken)
     {
-        var tasks = this.connectionManager.GetAllConnections()
-            .Select(client => this.NotifyClient(client.Key, message));
-        await Task.WhenAll(tasks);
+        await this.webSocketMessenger.SendMessageAsync(Actions.Notification, message, Guid.Empty, cancellationToken);
     }
 
-    public async Task NotifyClient(Guid clientId, string message)
+    public async Task NotifyClientAsync(Guid clientId, string message, CancellationToken cancellationToken)
     {
-        var webSocket = this.connectionManager.GetConnection(clientId);
-        if (webSocket.State == WebSocketState.Open)
-        {
-            await webSocket.SendAsync(new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(message)), WebSocketMessageType.Text, true, CancellationToken.None);
-        }
+        await this.webSocketMessenger.SendMessageAsync(Actions.Notification, message, Guid.Empty, clientId, cancellationToken);
     }
 }
