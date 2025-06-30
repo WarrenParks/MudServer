@@ -25,7 +25,7 @@ public class ChatCommand(
 
     public async Task ExecuteAsync(WebSocketContext context, CancellationToken cancellationToken)
     {
-        if (TargetUserName != null)
+        if (!string.IsNullOrWhiteSpace(TargetUserName))
         {
             // Look up the client ID by user name
             var user = connectionManager.GetUserByName(TargetUserName);
