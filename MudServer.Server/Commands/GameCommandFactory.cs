@@ -23,7 +23,9 @@ public class GameCommandFactory(
         // ["attack"] = typeof(AttackCommand),
         ["ping"] = typeof(PingCommand),
         ["chat"] = typeof(ChatCommand),
-        ["startgame"] = typeof(StartGameCommand)
+        ["startgame"] = typeof(StartGameCommand),
+        ["register"] = typeof(RegisterCommand),
+        ["stopserver"] = typeof(StopServerCommand)
         // Add more mappings as you create them
     };
 

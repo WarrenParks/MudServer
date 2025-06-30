@@ -12,4 +12,11 @@ public enum Actions
     Ping,
     StartGame,
     Broadcast,
+    // Server Responses
+    Welcome,
+    Chat,
+    UserJoined,
+    UserLeft,
+    Notification,
+    Error
 }

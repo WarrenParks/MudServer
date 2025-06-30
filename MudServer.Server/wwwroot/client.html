@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MUD Client</title>
+    <link rel="stylesheet" href="client.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Top header area -->
+      <header>
+        <h1>MUD World</h1>
+        <div class="connection-status">
+          <span id="connection-indicator" class="disconnected"></span>
+          <span id="connection-text">Disconnected</span>
+        </div>
+      </header>
+
+      <div class="main-content">
+        <!-- Left sidebar - Online Users -->
+        <div class="sidebar users-sidebar">
+          <h2>Online Users</h2>
+          <ul id="online-users">
+            <!-- Users will be populated here -->
+          </ul>
+        </div>
+
+        <!-- Main game area - Map -->
+        <div class="game-area">
+          <div class="map-container">
+            <div id="game-map" class="map">
+              <!-- Map will be rendered here -->
+            </div>
+          </div>
+
+          <!-- Controls will be added here later -->
+          <div class="controls">
+            <div class="movement-controls">
+              <button id="move-north">North</button>
+              <div class="east-west">
+                <button id="move-west">West</button>
+                <button id="move-east">East</button>
+              </div>
+              <button id="move-south">South</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom area - Chat and event log -->
+      <div class="bottom-panel">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="chat">Chat</button>
+          <button class="tab-button" data-tab="events">Events</button>
+        </div>
+
+        <div class="tab-content">
+          <div id="chat-tab" class="tab-pane active">
+            <div id="chat-messages" class="message-area"></div>
+            <div class="input-area">
+              <input type="text" id="chat-input" placeholder="Type your message..." />
+              <button id="send-chat">Send</button>
+            </div>
+          </div>
+
+          <div id="events-tab" class="tab-pane">
+            <div id="event-log" class="message-area"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="client.js"></script>
+  </body>
+</html>
