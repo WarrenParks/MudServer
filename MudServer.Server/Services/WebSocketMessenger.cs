@@ -57,22 +57,24 @@ public class WebSocketMessenger(
             return;
         }
 
-        var response = CreateMergedResponse(action, payload, fromClientId);
+        var response = CreateMergedResponse(action, payload, fromClientId, toClientId);
         await SendJsonAsync(webSocket, response, cancellationToken);
     }
 
-    private object CreateMergedResponse(Actions action, object? data, Guid? fromClientId = null)
+    private object CreateMergedResponse(Actions action, object data, Guid fromClientId, Guid? toClientId = null)
     {
         // Start with base response
         var baseResponse = new Dictionary<string, object>
         {
-            ["action"] = action.ToString().ToLower()
+            ["action"] = action.ToString().ToLower(),
+            ["timestamp"] = DateTime.UtcNow.ToString("o"), // ISO 8601 format
+            ["fromClientId"] = fromClientId.ToString(),
         };
 
-        // Add fromClientId if provided
-        if (fromClientId.HasValue)
+        // If toClientId is provided, add it to the response
+        if (toClientId.HasValue)
         {
-            baseResponse["fromClientId"] = fromClientId.Value;
+            baseResponse["toClientId"] = toClientId.Value.ToString();
         }
 
         // If data is null, return just the base response

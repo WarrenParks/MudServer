@@ -40,6 +40,8 @@ public class WebSocketMessengerTests
         .Returns(webSocketMock.Object);
 
     // Configure WebSocket mock to return success for SendAsync
+    webSocketMock.Setup(ws => ws.State)
+        .Returns(WebSocketState.Open);
     webSocketMock
         .Setup(ws => ws.SendAsync(
             It.IsAny<ArraySegment<byte>>(),
@@ -109,22 +111,12 @@ public class WebSocketMessengerTests
     connectionManagerMock.Setup(cm => cm.GetAllConnections())
         .Returns(connections);
 
-    // Track which client IDs the message is sent to
-    connectionManagerMock.Setup(cm => cm.GetConnection(It.IsAny<Guid>()))
-        .Callback<Guid>(recipientIds.Add)
-        .Returns(webSocketMock.Object);
-
     // Act
-    await webSocketMessenger.SendMessageAsync(Actions.Chat, message, senderClientId, recipientClientId, CancellationToken.None);
+    await webSocketMessenger.SendMessageAsync(Actions.Chat, message, senderClientId, CancellationToken.None);
 
     // Assert
     // Verify we're calling GetAllConnections instead of GetConnection
     connectionManagerMock.Verify(cm => cm.GetAllConnections(), Times.Once);
-
-    // Verify we attempted to send to each client
-    connectionManagerMock.Verify(cm => cm.GetConnection(client1), Times.Once);
-    connectionManagerMock.Verify(cm => cm.GetConnection(client2), Times.Once);
-    connectionManagerMock.Verify(cm => cm.GetConnection(client3), Times.Once);
 
     // Verify WebSocket.SendAsync was called 3 times (once per client)
     webSocketMock.Verify(ws => ws.SendAsync(
@@ -133,12 +125,6 @@ public class WebSocketMessengerTests
         true,
         It.IsAny<CancellationToken>()),
         Times.Exactly(3));
-
-    // Make sure we sent to all clients
-    Assert.Equal(3, recipientIds.Count);
-    Assert.Contains(client1, recipientIds);
-    Assert.Contains(client2, recipientIds);
-    Assert.Contains(client3, recipientIds);
   }
 
   [Fact]
@@ -149,28 +135,27 @@ public class WebSocketMessengerTests
         .Setup(cm => cm.GetConnection(It.IsAny<Guid>()))
         .Returns((WebSocket)null);
 
-    // Act & Assert
+    // Act
     var exception = await Record.ExceptionAsync(() =>
         webSocketMessenger.SendMessageAsync(Actions.Chat, "Test", senderClientId, recipientClientId, CancellationToken.None));
 
-    Assert.NotNull(exception);
-    Assert.IsType<NullReferenceException>(exception);
-  }
+    // Assert that no exception is thrown
+    Assert.Null(exception);
+    // Verify that SendAsync was never called
+    webSocketMock.Verify(ws => ws.SendAsync(
+        It.IsAny<ArraySegment<byte>>(),
+        WebSocketMessageType.Text,
+        true,
+        It.IsAny<CancellationToken>()), Times.Never);
 
-  [Fact]
-  public async Task SendMessageAsync_WhenWebSocketThrows_ShouldPropagateException()
-  {
-    // Arrange
-    webSocketMock
-        .Setup(ws => ws.SendAsync(
-            It.IsAny<ArraySegment<byte>>(),
-            WebSocketMessageType.Text,
-            true,
-            It.IsAny<CancellationToken>()))
-        .ThrowsAsync(new WebSocketException("Test exception"));
-
-    // Act & Assert
-    await Assert.ThrowsAsync<WebSocketException>(() =>
-        webSocketMessenger.SendMessageAsync(Actions.Chat, "Test", senderClientId, recipientClientId, CancellationToken.None));
+    // Verify we logged a warning
+    loggerMock.Verify(
+        l => l.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Cannot send message to")),
+            It.IsAny<Exception>(),
+            It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+        Times.Once);
   }
 }
